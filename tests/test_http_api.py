@@ -114,6 +114,7 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual(body["events"][0]["event_id"], "e2")
 
 
+ codex/document-live-cricket-prediction-flow-k0qnij
     def test_docs_alias_endpoints_and_not_found_payload(self) -> None:
         self._request("POST", "/auth/signup", {"user_id": "u2"})
         self._request(
@@ -161,5 +162,6 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual(body["status"], "ok")
 
 
+ main
 if __name__ == "__main__":
     unittest.main()

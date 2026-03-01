@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ codex/document-live-cricket-prediction-flow-k0qnij
 from typing import Any, Dict, List, Optional
+
+from typing import Any, Dict, Optional
+ main
 from urllib.parse import parse_qs, urlparse
 
 from .live_prediction_system import EventStatus, LivePredictionSystem, ModelType
@@ -30,6 +34,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
             return path[len(prefix):]
         return None
 
+ codex/document-live-cricket-prediction-flow-k0qnij
     @staticmethod
     def _routes() -> Dict[str, List[str]]:
         return {
@@ -55,6 +60,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
             ],
         }
 
+ main
     def do_POST(self) -> None:  # noqa: N802
         try:
             path = urlparse(self.path).path
@@ -110,6 +116,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 )
                 return
 
+codex/document-live-cricket-prediction-flow-k0qnij
             # Alias: POST /prediction-events/{event_id}/picks
             remainder = self._route_match("/prediction-events/")
             if remainder and remainder.endswith("/picks"):
@@ -130,6 +137,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 )
                 return
 
+ main
             remainder = self._route_match("/events/")
             if remainder and remainder.endswith("/settle"):
                 event_id = remainder[: -len("/settle")]
@@ -138,7 +146,11 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 self._json_response(200, {"event_id": event_id, "status": EventStatus.SETTLED.value})
                 return
 
+ codex/document-live-cricket-prediction-flow-k0qnij
             self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+
+            self._json_response(404, {"error": "not found"})
+ main
         except Exception as exc:  # pragma: no cover - mapped to API errors
             self._json_response(400, {"error": str(exc)})
 
@@ -157,6 +169,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                     },
                 )
                 return
+ codex/document-live-cricket-prediction-flow-k0qnij
 
             # Alias: PATCH /picks/{prediction_id}
             remainder = self._route_match("/picks/")
@@ -174,12 +187,16 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 return
 
             self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+
+            self._json_response(404, {"error": "not found"})
+ main
         except Exception as exc:  # pragma: no cover
             self._json_response(400, {"error": str(exc)})
 
     def do_GET(self) -> None:  # noqa: N802
         try:
             parsed = urlparse(self.path)
+codex/document-live-cricket-prediction-flow-k0qnij
             if parsed.path == "/":
                 self._json_response(200, {"service": "live-prediction-api", "routes": self._routes()})
                 return
@@ -188,6 +205,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 self._json_response(200, {"status": "ok"})
                 return
 
+ main
             if parsed.path == "/events":
                 query = parse_qs(parsed.query)
                 status_filter = query.get("status", [None])[0]
@@ -206,6 +224,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 self._json_response(200, {"events": events})
                 return
 
+codex/document-live-cricket-prediction-flow-k0qnij
             # Alias: GET /matches/{match_id}/prediction-events?status=open
             remainder = self._route_match("/matches/")
             if remainder and "/prediction-events" in remainder:
@@ -229,7 +248,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                         )
                     self._json_response(200, {"events": events})
                     return
-
+main
             remainder = self._route_match("/dashboard/")
             if remainder:
                 user_id = remainder
@@ -237,6 +256,7 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 self._json_response(200, dashboard)
                 return
 
+ codex/document-live-cricket-prediction-flow-k0qnij
             # Alias: GET /dashboard/me?user_id={user_id}
             if parsed.path == "/dashboard/me":
                 user_id = parse_qs(parsed.query).get("user_id", [None])[0]
@@ -247,6 +267,9 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 return
 
             self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+
+            self._json_response(404, {"error": "not found"})
+ main
         except Exception as exc:  # pragma: no cover
             self._json_response(400, {"error": str(exc)})
 
