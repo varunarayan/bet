@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ codex/document-live-cricket-prediction-flow-k0qnij
+from typing import Any, Dict, List, Optional
+
 from typing import Any, Dict, Optional
+ main
 from urllib.parse import parse_qs, urlparse
 
 from .live_prediction_system import EventStatus, LivePredictionSystem, ModelType
@@ -30,6 +34,33 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
             return path[len(prefix):]
         return None
 
+ codex/document-live-cricket-prediction-flow-k0qnij
+    @staticmethod
+    def _routes() -> Dict[str, List[str]]:
+        return {
+            "health": ["GET /healthz"],
+            "signup": ["POST /auth/signup"],
+            "events": [
+                "POST /events",
+                "GET /events?status=open",
+                "POST /events/{event_id}/settle",
+            ],
+            "predictions": [
+                "POST /predictions",
+                "PATCH /predictions/{prediction_id}",
+            ],
+            "aliases_supported": [
+                "GET /matches/{match_id}/prediction-events?status=open",
+                "POST /prediction-events/{event_id}/picks",
+                "PATCH /picks/{prediction_id}",
+            ],
+            "dashboard": [
+                "GET /dashboard/{user_id}",
+                "GET /dashboard/me?user_id={user_id}",
+            ],
+        }
+
+ main
     def do_POST(self) -> None:  # noqa: N802
         try:
             path = urlparse(self.path).path
@@ -85,6 +116,28 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 )
                 return
 
+codex/document-live-cricket-prediction-flow-k0qnij
+            # Alias: POST /prediction-events/{event_id}/picks
+            remainder = self._route_match("/prediction-events/")
+            if remainder and remainder.endswith("/picks"):
+                event_id = remainder[: -len("/picks")]
+                payload = self._read_json()
+                prediction = self.system.make_prediction(
+                    prediction_id=payload["prediction_id"],
+                    user_id=payload["user_id"],
+                    event_id=event_id,
+                    selected_option=payload["selected_option"],
+                )
+                self._json_response(
+                    201,
+                    {
+                        "prediction_id": prediction.prediction_id,
+                        "status": prediction.status.value,
+                    },
+                )
+                return
+
+ main
             remainder = self._route_match("/events/")
             if remainder and remainder.endswith("/settle"):
                 event_id = remainder[: -len("/settle")]
@@ -93,7 +146,11 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 self._json_response(200, {"event_id": event_id, "status": EventStatus.SETTLED.value})
                 return
 
+ codex/document-live-cricket-prediction-flow-k0qnij
+            self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+
             self._json_response(404, {"error": "not found"})
+ main
         except Exception as exc:  # pragma: no cover - mapped to API errors
             self._json_response(400, {"error": str(exc)})
 
@@ -112,13 +169,43 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                     },
                 )
                 return
+ codex/document-live-cricket-prediction-flow-k0qnij
+
+            # Alias: PATCH /picks/{prediction_id}
+            remainder = self._route_match("/picks/")
+            if remainder:
+                prediction_id = remainder
+                payload = self._read_json()
+                prediction = self.system.edit_prediction(prediction_id, payload["selected_option"])
+                self._json_response(
+                    200,
+                    {
+                        "prediction_id": prediction.prediction_id,
+                        "selected_option": prediction.selected_option,
+                    },
+                )
+                return
+
+            self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+
             self._json_response(404, {"error": "not found"})
+ main
         except Exception as exc:  # pragma: no cover
             self._json_response(400, {"error": str(exc)})
 
     def do_GET(self) -> None:  # noqa: N802
         try:
             parsed = urlparse(self.path)
+codex/document-live-cricket-prediction-flow-k0qnij
+            if parsed.path == "/":
+                self._json_response(200, {"service": "live-prediction-api", "routes": self._routes()})
+                return
+
+            if parsed.path == "/healthz":
+                self._json_response(200, {"status": "ok"})
+                return
+
+ main
             if parsed.path == "/events":
                 query = parse_qs(parsed.query)
                 status_filter = query.get("status", [None])[0]
@@ -137,6 +224,31 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 self._json_response(200, {"events": events})
                 return
 
+codex/document-live-cricket-prediction-flow-k0qnij
+            # Alias: GET /matches/{match_id}/prediction-events?status=open
+            remainder = self._route_match("/matches/")
+            if remainder and "/prediction-events" in remainder:
+                match_id, _, suffix = remainder.partition("/prediction-events")
+                if suffix == "":
+                    query = parse_qs(parsed.query)
+                    status_filter = query.get("status", [None])[0]
+                    events = []
+                    for event in self.system.events.values():
+                        if event.match_id != match_id:
+                            continue
+                        if status_filter and event.status.value != status_filter:
+                            continue
+                        events.append(
+                            {
+                                "event_id": event.event_id,
+                                "match_id": event.match_id,
+                                "model_type": event.model_type.value,
+                                "status": event.status.value,
+                            }
+                        )
+                    self._json_response(200, {"events": events})
+                    return
+main
             remainder = self._route_match("/dashboard/")
             if remainder:
                 user_id = remainder
@@ -144,7 +256,20 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 self._json_response(200, dashboard)
                 return
 
+ codex/document-live-cricket-prediction-flow-k0qnij
+            # Alias: GET /dashboard/me?user_id={user_id}
+            if parsed.path == "/dashboard/me":
+                user_id = parse_qs(parsed.query).get("user_id", [None])[0]
+                if not user_id:
+                    raise ValueError("user_id query parameter is required for /dashboard/me")
+                dashboard = self.system.dashboard(user_id)
+                self._json_response(200, dashboard)
+                return
+
+            self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+
             self._json_response(404, {"error": "not found"})
+ main
         except Exception as exc:  # pragma: no cover
             self._json_response(400, {"error": str(exc)})
 

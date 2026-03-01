@@ -114,5 +114,54 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual(body["events"][0]["event_id"], "e2")
 
 
+ codex/document-live-cricket-prediction-flow-k0qnij
+    def test_docs_alias_endpoints_and_not_found_payload(self) -> None:
+        self._request("POST", "/auth/signup", {"user_id": "u2"})
+        self._request(
+            "POST",
+            "/events",
+            {
+                "event_id": "e3",
+                "match_id": "m2",
+                "model_type": "next_over_runs",
+                "option_a": "Over 8.5",
+                "option_b": "Under 8.5",
+                "prob_a": 0.51,
+                "prob_b": 0.49,
+                "lock_in_seconds": 100,
+            },
+        )
+
+        status, body = self._request("GET", "/matches/m2/prediction-events?status=open")
+        self.assertEqual(status, 200)
+        self.assertEqual(len(body["events"]), 1)
+
+        status, body = self._request(
+            "POST",
+            "/prediction-events/e3/picks",
+            {
+                "prediction_id": "p3",
+                "user_id": "u2",
+                "selected_option": "Over 8.5",
+            },
+        )
+        self.assertEqual(status, 201)
+        self.assertEqual(body["status"], "open")
+
+        status, body = self._request("PATCH", "/picks/p3", {"selected_option": "Under 8.5"})
+        self.assertEqual(status, 200)
+        self.assertEqual(body["selected_option"], "Under 8.5")
+
+    def test_root_and_health_routes(self) -> None:
+        status, body = self._request("GET", "/")
+        self.assertEqual(status, 200)
+        self.assertIn("routes", body)
+
+        status, body = self._request("GET", "/healthz")
+        self.assertEqual(status, 200)
+        self.assertEqual(body["status"], "ok")
+
+
+ main
 if __name__ == "__main__":
     unittest.main()
