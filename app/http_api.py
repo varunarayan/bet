@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+codex/document-live-cricket-prediction-flow-riizx5
+from typing import Any, Dict, List, Optional
+
  codex/document-live-cricket-prediction-flow-k0qnij
 from typing import Any, Dict, List, Optional
 
 from typing import Any, Dict, Optional
+ main
  main
 from urllib.parse import parse_qs, urlparse
 
@@ -34,7 +38,10 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
             return path[len(prefix):]
         return None
 
+ codex/document-live-cricket-prediction-flow-riizx5
+
  codex/document-live-cricket-prediction-flow-k0qnij
+ main
     @staticmethod
     def _routes() -> Dict[str, List[str]]:
         return {
@@ -60,6 +67,9 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
             ],
         }
 
+ codex/document-live-cricket-prediction-flow-riizx5
+
+ main
  main
     def do_POST(self) -> None:  # noqa: N802
         try:
@@ -116,7 +126,10 @@ class LivePredictionRequestHandler(BaseHTTPRequestHandler):
                 )
                 return
 
+codex/document-live-cricket-prediction-flow-riizx5
+
 codex/document-live-cricket-prediction-flow-k0qnij
+main
             # Alias: POST /prediction-events/{event_id}/picks
             remainder = self._route_match("/prediction-events/")
             if remainder and remainder.endswith("/picks"):
@@ -137,6 +150,9 @@ codex/document-live-cricket-prediction-flow-k0qnij
                 )
                 return
 
+ codex/document-live-cricket-prediction-flow-riizx5
+
+ main
  main
             remainder = self._route_match("/events/")
             if remainder and remainder.endswith("/settle"):
@@ -146,10 +162,14 @@ codex/document-live-cricket-prediction-flow-k0qnij
                 self._json_response(200, {"event_id": event_id, "status": EventStatus.SETTLED.value})
                 return
 
+codex/document-live-cricket-prediction-flow-riizx5
+            self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+
  codex/document-live-cricket-prediction-flow-k0qnij
             self._json_response(404, {"error": "not found", "available_routes": self._routes()})
 
             self._json_response(404, {"error": "not found"})
+ main
  main
         except Exception as exc:  # pragma: no cover - mapped to API errors
             self._json_response(400, {"error": str(exc)})
@@ -169,7 +189,10 @@ codex/document-live-cricket-prediction-flow-k0qnij
                     },
                 )
                 return
+codex/document-live-cricket-prediction-flow-riizx5
+
  codex/document-live-cricket-prediction-flow-k0qnij
+main
 
             # Alias: PATCH /picks/{prediction_id}
             remainder = self._route_match("/picks/")
@@ -187,8 +210,11 @@ codex/document-live-cricket-prediction-flow-k0qnij
                 return
 
             self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+ codex/document-live-cricket-prediction-flow-riizx5
+
 
             self._json_response(404, {"error": "not found"})
+ main
  main
         except Exception as exc:  # pragma: no cover
             self._json_response(400, {"error": str(exc)})
@@ -196,7 +222,10 @@ codex/document-live-cricket-prediction-flow-k0qnij
     def do_GET(self) -> None:  # noqa: N802
         try:
             parsed = urlparse(self.path)
+codex/document-live-cricket-prediction-flow-riizx5
+
 codex/document-live-cricket-prediction-flow-k0qnij
+main
             if parsed.path == "/":
                 self._json_response(200, {"service": "live-prediction-api", "routes": self._routes()})
                 return
@@ -205,6 +234,14 @@ codex/document-live-cricket-prediction-flow-k0qnij
                 self._json_response(200, {"status": "ok"})
                 return
 
+ codex/document-live-cricket-prediction-flow-riizx5
+            if parsed.path == "/favicon.ico":
+                self.send_response(204)
+                self.end_headers()
+                return
+
+
+ main
  main
             if parsed.path == "/events":
                 query = parse_qs(parsed.query)
@@ -224,7 +261,10 @@ codex/document-live-cricket-prediction-flow-k0qnij
                 self._json_response(200, {"events": events})
                 return
 
+ codex/document-live-cricket-prediction-flow-riizx5
+
 codex/document-live-cricket-prediction-flow-k0qnij
+ main
             # Alias: GET /matches/{match_id}/prediction-events?status=open
             remainder = self._route_match("/matches/")
             if remainder and "/prediction-events" in remainder:
@@ -248,6 +288,10 @@ codex/document-live-cricket-prediction-flow-k0qnij
                         )
                     self._json_response(200, {"events": events})
                     return
+ codex/document-live-cricket-prediction-flow-riizx5
+
+
+main
 main
             remainder = self._route_match("/dashboard/")
             if remainder:
@@ -256,7 +300,10 @@ main
                 self._json_response(200, dashboard)
                 return
 
+ codex/document-live-cricket-prediction-flow-riizx5
+
  codex/document-live-cricket-prediction-flow-k0qnij
+ main
             # Alias: GET /dashboard/me?user_id={user_id}
             if parsed.path == "/dashboard/me":
                 user_id = parse_qs(parsed.query).get("user_id", [None])[0]
@@ -267,8 +314,11 @@ main
                 return
 
             self._json_response(404, {"error": "not found", "available_routes": self._routes()})
+ codex/document-live-cricket-prediction-flow-riizx5
+
 
             self._json_response(404, {"error": "not found"})
+ main
  main
         except Exception as exc:  # pragma: no cover
             self._json_response(400, {"error": str(exc)})

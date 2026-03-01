@@ -39,6 +39,13 @@ class HttpApiTests(unittest.TestCase):
             body = json.loads(response.read().decode("utf-8"))
             return response.status, body
 
+ codex/document-live-cricket-prediction-flow-riizx5
+
+    def _request_status_only(self, method: str, path: str) -> int:
+        req = request.Request(url=f"http://127.0.0.1:{self.port}{path}", method=method)
+        with request.urlopen(req) as response:
+            return response.status
+ main
     def test_full_api_prediction_lifecycle(self) -> None:
         status, body = self._request("POST", "/auth/signup", {"user_id": "u1"})
         self.assertEqual(status, 201)
@@ -114,7 +121,10 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual(body["events"][0]["event_id"], "e2")
 
 
+ codex/document-live-cricket-prediction-flow-riizx5
+
  codex/document-live-cricket-prediction-flow-k0qnij
+ main
     def test_docs_alias_endpoints_and_not_found_payload(self) -> None:
         self._request("POST", "/auth/signup", {"user_id": "u2"})
         self._request(
@@ -161,7 +171,15 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(body["status"], "ok")
 
+ codex/document-live-cricket-prediction-flow-riizx5
+    def test_favicon_returns_no_content(self) -> None:
+        status = self._request_status_only("GET", "/favicon.ico")
+        self.assertEqual(status, 204)
 
+
+
+
+ main
  main
 if __name__ == "__main__":
     unittest.main()
